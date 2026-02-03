@@ -2,203 +2,200 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
-<title>新年快乐，小怡 💖</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>给小怡的新年祝福</title>
+
 <style>
-html,body{
-    margin:0;
-    padding:0;
-    width:100%;
-    height:100%;
-    overflow:hidden;
-    background: radial-gradient(circle at bottom, #0e0018, #000);
-    font-family: "Microsoft YaHei", sans-serif;
-}
-canvas{position:fixed;top:0;left:0;}
-
-.center{
-    position:fixed;
-    top:50%;
-    left:50%;
-    transform:translate(-50%,-50%);
-    text-align:center;
-    color:#ffd6e5;
-    pointer-events:none;
-}
-#countdown{
-    font-size:4em;
-    text-shadow:0 0 30px #ff6fa5;
-}
-#message{
-    opacity:0;
-    animation:fadeIn 3s forwards;
-    animation-delay:2s;
-}
-#message h2{
-    font-size:2.2em;
-    margin-bottom:10px;
-}
-#message p{
-    font-size:1.2em;
-    line-height:1.8;
+html, body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(circle at top, #1b1f3b, #000);
+  overflow: hidden;
+  font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
 }
 
-@keyframes fadeIn{
-    from{opacity:0; transform:translateY(20px)}
-    to{opacity:1; transform:translateY(0)}
+canvas {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
 }
 
-.tip{
-    position:fixed;
-    bottom:15px;
-    width:100%;
-    text-align:center;
-    color:#ffb6c1;
-    font-size:0.9em;
+.text {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: #fff;
+  font-size: 24px;
+  text-align: center;
+  line-height: 1.9;
+  letter-spacing: 1px;
+  z-index: 5;
+  opacity: 0;
+  transition: opacity 1.2s ease;
+  pointer-events: none;
+  text-shadow: 0 0 20px rgba(255,255,255,.3);
+  padding: 0 18px;
+}
+
+.tip {
+  position: fixed;
+  bottom: 18px;
+  left: 50%;
+  transform: translateX(-50%);
+  color: rgba(255,255,255,.85);
+  font-size: 14px;
+  z-index: 10;
+  animation: blink 1.5s infinite;
+}
+
+@keyframes blink {
+  0%,100% { opacity: .3 }
+  50% { opacity: 1 }
 }
 </style>
 </head>
+
 <body>
 
 <canvas id="canvas"></canvas>
+<div class="text" id="text"></div>
+<div class="tip">🎵 点一下屏幕，音乐和烟花一起开始</div>
 
-<div class="center">
-    <div id="countdown"></div>
-    <div id="message" style="display:none">
-        <h2>✨ 新年快乐，小怡 ✨</h2>
-        <p>
-            愿新的一年，<br>
-            烟花为你而亮，<br>
-            温柔始终与你同在。
-        </p>
-        <p>愿你平安、喜乐、被爱包围 💕</p>
-    </div>
-</div>
-
-<div class="tip">🎵 点击一次开启音乐 · 烟花将随节奏绽放 🎆</div>
-
-<audio
-  id="bgm"
-  src="music.mp3"
-  preload="auto"
-  loop
-  playsinline
-  webkit-playsinline
-></audio>
-
+<audio id="bgm" src="music.mp3" preload="auto" loop playsinline webkit-playsinline></audio>
 
 <script>
-const bgm = document.getElementById('bgm');
-let musicStarted = false;
-
-function startMusic() {
-  if (musicStarted) return;
-
-  bgm.volume = 1;
-  bgm.play().then(() => {
-    musicStarted = true;
-  }).catch(() => {
-  });
-}
-document.addEventListener('click', startMusic);
-document.addEventListener('touchstart', startMusic);
-document.addEventListener('pointerdown', startMusic);
-</script>
-
+/* ===== Canvas ===== */
 const canvas = document.getElementById("canvas");
 const ctx = canvas.getContext("2d");
-canvas.width = innerWidth;
-canvas.height = innerHeight;
-window.onresize=()=>{canvas.width=innerWidth;canvas.height=innerHeight;}
+function resize(){
+  canvas.width = innerWidth;
+  canvas.height = innerHeight;
+}
+resize();
+addEventListener("resize", resize);
 
-let fireworks=[];
-let playing=false;
-const bgm=document.getElementById("bgm");
+/* ===== Music ===== */
+const bgm = document.getElementById("bgm");
+let musicStarted = false;
+function startMusic(){
+  if(musicStarted) return;
+  bgm.play().then(()=>musicStarted=true).catch(()=>{});
+}
+["click","touchstart","pointerdown"].forEach(e=>{
+  document.addEventListener(e,startMusic);
+});
 
-// 粒子烟花
-function boom(x,y,count=120){
-    for(let i=0;i<count;i++){
-        fireworks.push({
-            x,y,
-            vx:(Math.random()-0.5)*12,
-            vy:(Math.random()-0.5)*12,
-            life:100,
-            color:`hsl(${Math.random()*360},100%,70%)`
-        });
-    }
+/* ===== Fireworks ===== */
+const particles = [];
+function firework(x,y,count=120){
+  for(let i=0;i<count;i++){
+    particles.push({
+      x,y,
+      vx:(Math.random()-0.5)*7,
+      vy:(Math.random()-0.5)*7,
+      life:110,
+      color:`hsl(${Math.random()*360},100%,65%)`
+    });
+  }
 }
 
 function animate(){
-    ctx.fillStyle="rgba(0,0,0,0.25)";
-    ctx.fillRect(0,0,canvas.width,canvas.height);
+  requestAnimationFrame(animate);
+  ctx.fillStyle="rgba(0,0,0,0.25)";
+  ctx.fillRect(0,0,canvas.width,canvas.height);
 
-    fireworks.forEach((f,i)=>{
-        f.x+=f.vx;
-        f.y+=f.vy;
-        f.vy+=0.05;
-        f.life--;
-        ctx.fillStyle=f.color;
-        ctx.beginPath();
-        ctx.arc(f.x,f.y,2,0,Math.PI*2);
-        ctx.fill();
-        if(f.life<=0) fireworks.splice(i,1);
-    });
+  for(let i=particles.length-1;i>=0;i--){
+    const p=particles[i];
+    p.x+=p.vx;
+    p.y+=p.vy;
+    p.vy+=0.04;
+    p.life--;
 
-    requestAnimationFrame(animate);
+    ctx.beginPath();
+    ctx.fillStyle=p.color;
+    ctx.arc(p.x,p.y,2.2,0,Math.PI*2);
+    ctx.fill();
+
+    if(p.life<=0) particles.splice(i,1);
+  }
 }
 animate();
 
-// 点击启动音乐
-canvas.onclick=()=>{
-    if(!playing){
-        bgm.play();
-        playing=true;
-    }
-    boom(event.clientX,event.clientY,150);
-};
+/* ===== 背景持续烟花（文字期间） ===== */
+let backgroundFirework = setInterval(()=>{
+  firework(
+    Math.random()*canvas.width,
+    Math.random()*canvas.height*0.7,
+    40
+  );
+}, 900);
 
-// ===== 跨年倒计时逻辑 =====
-const countdownEl=document.getElementById("countdown");
-const msg=document.getElementById("message");
+/* ===== Heart ===== */
+function heart(){
+  const cx=canvas.width/2, cy=canvas.height/2;
+  for(let t=0;t<Math.PI*2;t+=0.04){
+    const x=cx+16*Math.pow(Math.sin(t),3)*12;
+    const y=cy-(13*Math.cos(t)-5*Math.cos(2*t)-2*Math.cos(3*t)-Math.cos(4*t))*12;
+    firework(x,y,4);
+  }
+}
 
-// ⚠️ 演示用：倒计时 10 秒
-let t=10;
-// 如果你要真实跨年：
-// let now=new Date();
-// let target=new Date();
-// target.setHours(24,0,0,0);
-// let t=Math.floor((target-now)/1000);
+/* ===== Text ===== */
+const textEl=document.getElementById("text");
+function showText(str){
+  textEl.style.opacity=0;
+  setTimeout(()=>{
+    textEl.innerHTML=str;
+    textEl.style.opacity=1;
+    firework(canvas.width/2, canvas.height/2, 120);
+  },600);
+}
 
-const timer=setInterval(()=>{
-    if(t>0){
-        countdownEl.innerText=t;
-        boom(
-            Math.random()*canvas.width,
-            Math.random()*canvas.height*0.6+canvas.height*0.2,
-            40
-        );
-        t--;
-    }else{
-        clearInterval(timer);
-        countdownEl.style.display="none";
+/* ===== Timeline ===== */
+const timeline = [
+  "小怡 ✨",
+  "当这一年的时间<br>慢慢走到这里",
+  "你也许经历了很多<br>开心的 · 不开心的",
+  "有些时候你很坚强<br>有些时候你也会偷偷累",
+  "但不管怎样<br>你都走到了现在",
+  "新的一年要开始了",
+  "希望你不用那么辛苦<br>也能被生活温柔对待",
+  "希望你累的时候<br>有人懂你的沉默",
+  "希望你难过的时候<br>不用一个人扛",
+  "也希望你开心的时候<br>笑得比烟花还亮",
+  "愿你被爱包围<br>被理解 · 被珍惜",
+  "愿你平安 · 健康 · 心安",
+  "如果有一天你觉得迷茫",
+  "请记得<br>你本身就很值得",
+  "新年快乐，小怡 💖"
+];
 
-        // 00:00 全屏齐放
-        for(let i=0;i<20;i++){
-            setTimeout(()=>{
-                boom(
-                    Math.random()*canvas.width,
-                    Math.random()*canvas.height*0.6+canvas.height*0.2,
-                    200
-                );
-            },i*150);
-        }
+timeline.forEach((t,i)=>{
+  setTimeout(()=>showText(t), i*2600 + 1000);
+});
 
-        msg.style.display="block";
-    }
-},1000);
+/* ===== 最终高潮 ===== */
+setTimeout(()=>{
+  clearInterval(backgroundFirework);
+  heart();
+}, timeline.length*2600 + 2000);
+
+setTimeout(()=>{
+  showText("🎆 新年快乐，小怡 🎆<br>愿未来的每一天<br>都有光 · 有爱 · 有温柔");
+  for(let i=0;i<35;i++){
+    setTimeout(()=>{
+      firework(Math.random()*canvas.width,Math.random()*canvas.height,200);
+    },i*120);
+  }
+}, timeline.length*2600 + 6000);
+
+/* 点击放烟花 */
+addEventListener("click",e=>{
+  firework(e.clientX,e.clientY,100);
+});
 </script>
-
 </body>
 </html>
-
-
