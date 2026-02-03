@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>新年快乐，小怡 💖</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+html,body{
+    margin:0;
+    padding:0;
+    width:100%;
+    height:100%;
+    overflow:hidden;
+    background: radial-gradient(circle at bottom, #0e0018, #000);
+    font-family: "Microsoft YaHei", sans-serif;
+}
+canvas{position:fixed;top:0;left:0;}
+
+.center{
+    position:fixed;
+    top:50%;
+    left:50%;
+    transform:translate(-50%,-50%);
+    text-align:center;
+    color:#ffd6e5;
+    pointer-events:none;
+}
+#countdown{
+    font-size:4em;
+    text-shadow:0 0 30px #ff6fa5;
+}
+#message{
+    opacity:0;
+    animation:fadeIn 3s forwards;
+    animation-delay:2s;
+}
+#message h2{
+    font-size:2.2em;
+    margin-bottom:10px;
+}
+#message p{
+    font-size:1.2em;
+    line-height:1.8;
+}
+
+@keyframes fadeIn{
+    from{opacity:0; transform:translateY(20px)}
+    to{opacity:1; transform:translateY(0)}
+}
+
+.tip{
+    position:fixed;
+    bottom:15px;
+    width:100%;
+    text-align:center;
+    color:#ffb6c1;
+    font-size:0.9em;
+}
+</style>
+</head>
+<body>
+
+<canvas id="canvas"></canvas>
+
+<div class="center">
+    <div id="countdown"></div>
+    <div id="message" style="display:none">
+        <h2>✨ 新年快乐，小怡 ✨</h2>
+        <p>
+            愿新的一年，<br>
+            烟花为你而亮，<br>
+            温柔始终与你同在。
+        </p>
+        <p>愿你平安、喜乐、被爱包围 💕</p>
+    </div>
+</div>
+
+<div class="tip">🎵 点击一次开启音乐 · 烟花将随节奏绽放 🎆</div>
+
+<audio id="bgm" src="music.mp3" preload="auto"></audio>
+
+<script>
+const canvas = document.getElementById("canvas");
+const ctx = canvas.getContext("2d");
+canvas.width = innerWidth;
+canvas.height = innerHeight;
+window.onresize=()=>{canvas.width=innerWidth;canvas.height=innerHeight;}
+
+let fireworks=[];
+let playing=false;
+const bgm=document.getElementById("bgm");
+
+// 粒子烟花
+function boom(x,y,count=120){
+    for(let i=0;i<count;i++){
+        fireworks.push({
+            x,y,
+            vx:(Math.random()-0.5)*12,
+            vy:(Math.random()-0.5)*12,
+            life:100,
+            color:`hsl(${Math.random()*360},100%,70%)`
+        });
+    }
+}
+
+function animate(){
+    ctx.fillStyle="rgba(0,0,0,0.25)";
+    ctx.fillRect(0,0,canvas.width,canvas.height);
+
+    fireworks.forEach((f,i)=>{
+        f.x+=f.vx;
+        f.y+=f.vy;
+        f.vy+=0.05;
+        f.life--;
+        ctx.fillStyle=f.color;
+        ctx.beginPath();
+        ctx.arc(f.x,f.y,2,0,Math.PI*2);
+        ctx.fill();
+        if(f.life<=0) fireworks.splice(i,1);
+    });
+
+    requestAnimationFrame(animate);
+}
+animate();
+
+// 点击启动音乐
+canvas.onclick=()=>{
+    if(!playing){
+        bgm.play();
+        playing=true;
+    }
+    boom(event.clientX,event.clientY,150);
+};
+
+// ===== 跨年倒计时逻辑 =====
+const countdownEl=document.getElementById("countdown");
+const msg=document.getElementById("message");
+
+// ⚠️ 演示用：倒计时 10 秒
+let t=10;
+// 如果你要真实跨年：
+// let now=new Date();
+// let target=new Date();
+// target.setHours(24,0,0,0);
+// let t=Math.floor((target-now)/1000);
+
+const timer=setInterval(()=>{
+    if(t>0){
+        countdownEl.innerText=t;
+        boom(
+            Math.random()*canvas.width,
+            Math.random()*canvas.height*0.6+canvas.height*0.2,
+            40
+        );
+        t--;
+    }else{
+        clearInterval(timer);
+        countdownEl.style.display="none";
+
+        // 00:00 全屏齐放
+        for(let i=0;i<20;i++){
+            setTimeout(()=>{
+                boom(
+                    Math.random()*canvas.width,
+                    Math.random()*canvas.height*0.6+canvas.height*0.2,
+                    200
+                );
+            },i*150);
+        }
+
+        msg.style.display="block";
+    }
+},1000);
+</script>
+
+</body>
+</html>
