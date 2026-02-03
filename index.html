@@ -80,6 +80,19 @@ canvas{position:fixed;top:0;left:0;}
 <audio id="bgm" src="music.mp3" preload="auto"></audio>
 
 <script>
+    const bgm = document.getElementById('bgm');
+let musicStarted = false;
+
+function startMusic() {
+  if (!musicStarted) {
+    bgm.play().catch(() => {});
+    musicStarted = true;
+  }
+}
+
+document.addEventListener('click', startMusic, { once: true });
+document.addEventListener('touchstart', startMusic, { once: true });
+
 const canvas = document.getElementById("canvas");
 const ctx = canvas.getContext("2d");
 canvas.width = innerWidth;
@@ -175,3 +188,4 @@ const timer=setInterval(()=>{
 
 </body>
 </html>
+
