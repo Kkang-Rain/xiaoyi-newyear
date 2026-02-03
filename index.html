@@ -77,21 +77,33 @@ canvas{position:fixed;top:0;left:0;}
 
 <div class="tip">🎵 点击一次开启音乐 · 烟花将随节奏绽放 🎆</div>
 
-<audio id="bgm" src="music.mp3" preload="auto"></audio>
+<audio
+  id="bgm"
+  src="music.mp3"
+  preload="auto"
+  loop
+  playsinline
+  webkit-playsinline
+></audio>
+
 
 <script>
-    const bgm = document.getElementById('bgm');
+const bgm = document.getElementById('bgm');
 let musicStarted = false;
 
 function startMusic() {
-  if (!musicStarted) {
-    bgm.play().catch(() => {});
-    musicStarted = true;
-  }
-}
+  if (musicStarted) return;
 
-document.addEventListener('click', startMusic, { once: true });
-document.addEventListener('touchstart', startMusic, { once: true });
+  bgm.volume = 1;
+  bgm.play().then(() => {
+    musicStarted = true;
+  }).catch(() => {
+  });
+}
+document.addEventListener('click', startMusic);
+document.addEventListener('touchstart', startMusic);
+document.addEventListener('pointerdown', startMusic);
+</script>
 
 const canvas = document.getElementById("canvas");
 const ctx = canvas.getContext("2d");
@@ -188,4 +200,5 @@ const timer=setInterval(()=>{
 
 </body>
 </html>
+
 
